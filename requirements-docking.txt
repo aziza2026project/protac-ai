@@ -1,5 +1,0 @@
-# OPTIONAL LOCAL DOCKING ENVIRONMENT ONLY.
-# Do not add this file to Streamlit Cloud's main requirements.txt.
-# Vina may require platform-specific native libraries / wheels.
-# Install and validate separately in a compatible Python 3.11 environment.
-vina>=1.2.7,<2.0
