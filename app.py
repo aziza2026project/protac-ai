@@ -1,5 +1,5 @@
 
-"""Application shell only. Individual screens are in protac_nexus/pages/."""
+"""PROTAC Nexus - Main Application"""
 
 import streamlit as st
 
@@ -28,9 +28,9 @@ from protac_nexus.pages import (
 )
 
 
-# --------------------------------------------------
+# ==========================================
 # PAGE CONFIGURATION
-# --------------------------------------------------
+# ==========================================
 
 st.set_page_config(
     page_title="PROTAC Nexus",
@@ -39,17 +39,12 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-
-# --------------------------------------------------
-# APPLICATION STYLES
-# --------------------------------------------------
-
 apply_styles()
 
 
-# --------------------------------------------------
+# ==========================================
 # PAGE REGISTRY
-# --------------------------------------------------
+# ==========================================
 
 PAGES = {
     "Home": home.render,
@@ -73,17 +68,17 @@ PAGES = {
 }
 
 
-# --------------------------------------------------
+# ==========================================
 # SESSION STATE
-# --------------------------------------------------
+# ==========================================
 
 if "current_page" not in st.session_state:
     st.session_state.current_page = "Home"
 
 
-# --------------------------------------------------
-# SIDEBAR NAVIGATION - BUTTONS
-# --------------------------------------------------
+# ==========================================
+# SIDEBAR NAVIGATION
+# ==========================================
 
 with st.sidebar:
 
@@ -97,23 +92,16 @@ with st.sidebar:
 
     st.divider()
 
-    # Navigation buttons
-    for page_name in PAGES:
+    selected_page = st.radio(
+        "Navigation",
+        options=list(PAGES.keys()),
+        index=list(PAGES.keys()).index(
+            st.session_state.current_page
+        ),
+        label_visibility="collapsed",
+    )
 
-        is_active = (
-            st.session_state.current_page == page_name
-        )
-
-        if st.button(
-            page_name,
-            key=f"nav_{page_name}",
-            use_container_width=True,
-            type="primary" if is_active else "secondary",
-        ):
-
-            st.session_state.current_page = page_name
-
-            st.rerun()
+    st.session_state.current_page = selected_page
 
     st.divider()
 
@@ -123,18 +111,103 @@ with st.sidebar:
     )
 
 
-# --------------------------------------------------
-# DISPLAY SELECTED PAGE
-# --------------------------------------------------
+# ==========================================
+# MAIN CONTENT
+# ==========================================
 
-selected_page = st.session_state.current_page
+if st.session_state.current_page == "Home":
 
-PAGES[selected_page]()
+    st.title("🌿 PROTAC Nexus")
+
+    st.subheader(
+        "Natural Products–Based PROTACs for Cancer Therapy"
+    )
+
+    st.write(
+        "An integrated research workspace for natural products, "
+        "PROTAC discovery, molecular modeling, experimental data "
+        "and scientific analysis."
+    )
+
+    st.divider()
+
+    st.header("Explore Our Services")
+
+    st.write(
+        "Select a service to access its dedicated research workspace."
+    )
+
+    # Map service names to registered application pages
+    SERVICE_PAGE_MAP = {
+        "Natural Products Explorer": "Natural Products Explorer",
+        "PROTAC Explorer": "PROTAC Explorer",
+        "Molecular Docking": "Molecular Docking",
+        "3D Structure Visualization": "3D Structure Visualization",
+        "Experimental Data Explorer": "Experimental Data Explorer",
+        "Comparison & Ranking": "Comparison & Ranking",
+        "Ternary Complex Assessment": "Ternary Complex Assessment",
+        "Linker Optimization": "Linker Optimization",
+        "AI Prediction": "AI Prediction",
+        "Export & Reports": "Export & Reports",
+        "Research Consultation": "Research Consultation",
+        "Research Collaboration": "Research Collaboration",
+    }
+
+    services_list = list(SERVICES.items())
+
+    # Display services in three columns
+    for start in range(0, len(services_list), 3):
+
+        columns = st.columns(3)
+
+        for column, (service_name, description) in zip(
+            columns,
+            services_list[start:start + 3]
+        ):
+
+            with column:
+
+                with st.container(border=True):
+
+                    st.markdown(f"### {service_name}")
+
+                    st.write(description)
+
+                    target_page = SERVICE_PAGE_MAP.get(
+                        service_name
+                    )
+
+                    if target_page:
+
+                        if st.button(
+                            "Open Service →",
+                            key=f"service_button_{service_name}",
+                            use_container_width=True,
+                            type="primary",
+                        ):
+
+                            st.session_state.current_page = target_page
+
+                            st.rerun()
+
+                    else:
+
+                        st.button(
+                            "Coming Soon",
+                            key=f"coming_{service_name}",
+                            disabled=True,
+                            use_container_width=True,
+                        )
 
 
-# --------------------------------------------------
+else:
+
+    PAGES[st.session_state.current_page]()
+
+
+# ==========================================
 # FOOTER
-# --------------------------------------------------
+# ==========================================
 
 st.divider()
 
