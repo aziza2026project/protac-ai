@@ -1,1 +1,0 @@
-"""PROTAC Nexus application package."""
