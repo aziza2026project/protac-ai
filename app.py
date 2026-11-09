@@ -1,5 +1,5 @@
 
-"""PROTAC Nexus - Main Application"""
+"""PROTAC Nexus - Main Application | Demo User Mode"""
 
 import streamlit as st
 
@@ -43,6 +43,20 @@ apply_styles()
 
 
 # ==========================================
+# DEMO USER CONFIGURATION
+# ==========================================
+
+DEMO_MODE = True
+
+if DEMO_MODE:
+    st.session_state.demo_mode = True
+    st.session_state.user_role = "demo"
+    st.session_state.user_email = "demo@protacnexus.local"
+    st.session_state.username = "Demo User"
+    st.session_state.is_authenticated = True
+
+
+# ==========================================
 # PAGE REGISTRY
 # ==========================================
 
@@ -66,6 +80,18 @@ PAGES = {
     "Admin Portal": admin_portal.render,
     "Platform Roadmap": platform_roadmap.render,
 }
+
+
+# ==========================================
+# DEMO PAGE ACCESS
+# ==========================================
+
+# Admin Portal is excluded from the Demo User navigation.
+DEMO_PAGES = [
+    page_name
+    for page_name in PAGES
+    if page_name != "Admin Portal"
+]
 
 
 # ==========================================
@@ -95,6 +121,10 @@ SERVICE_PAGE_MAP = {
 if "current_page" not in st.session_state:
     st.session_state.current_page = "Home"
 
+# Prevent access to pages outside the Demo User navigation.
+if st.session_state.current_page not in DEMO_PAGES:
+    st.session_state.current_page = "Home"
+
 
 # ==========================================
 # SIDEBAR NAVIGATION
@@ -108,14 +138,22 @@ with st.sidebar:
         "Natural Products–Based PROTACs for Cancer Therapy"
     )
 
-    st.caption("RESEARCH WORKSPACE")
+    st.divider()
+
+    # Demo User identity
+    st.success("🧪 Demo User Session")
+
+    st.caption("Account: demo@protacnexus.local")
+    st.caption("Role: Demo User")
 
     st.divider()
 
+    st.caption("RESEARCH WORKSPACE")
+
     selected_page = st.radio(
         "Navigation",
-        options=list(PAGES.keys()),
-        index=list(PAGES.keys()).index(
+        options=DEMO_PAGES,
+        index=DEMO_PAGES.index(
             st.session_state.current_page
         ),
         label_visibility="collapsed",
@@ -127,10 +165,38 @@ with st.sidebar:
 
     st.divider()
 
-    st.caption(
-        "Early prototype — secure workflows and some "
-        "scientific engines are not connected yet."
+    st.info(
+        "You are using the public Demo environment. "
+        "The Admin Portal is restricted."
     )
+
+    st.caption(
+        "Some scientific engines and external integrations "
+        "may not yet be connected."
+    )
+
+
+# ==========================================
+# DEMO MODE BANNER
+# ==========================================
+
+st.markdown(
+    """
+    <div style="
+        padding: 10px 16px;
+        border-radius: 8px;
+        background-color: rgba(30, 136, 100, 0.10);
+        border: 1px solid rgba(30, 136, 100, 0.35);
+        margin-bottom: 15px;
+    ">
+        🧪 <b>DEMO ENVIRONMENT</b>
+        <span style="margin-left: 8px;">
+            You are exploring PROTAC Nexus as a Demo User.
+        </span>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 
 # ==========================================
@@ -184,12 +250,12 @@ if st.session_state.current_page == "Home":
                         service_name
                     )
 
-                    if target_page:
+                    if target_page and target_page in DEMO_PAGES:
 
                         if st.button(
                             "Explore Service →",
                             key=f"service_{service_name}",
-                            use_container_width=True,
+                            width="stretch",
                             type="primary",
                         ):
 
@@ -202,7 +268,7 @@ if st.session_state.current_page == "Home":
                             "Coming Soon",
                             key=f"coming_{service_name}",
                             disabled=True,
-                            use_container_width=True,
+                            width="stretch",
                         )
 
 
@@ -230,9 +296,18 @@ else:
             st.session_state.current_page = "Home"
             st.rerun()
 
-    # Display selected page
+    # Admin Portal protection
 
-    PAGES[current_page]()
+    if current_page == "Admin Portal":
+
+        st.error(
+            "Access denied. The Admin Portal is not available "
+            "in the Demo User environment."
+        )
+
+    else:
+
+        PAGES[current_page]()
 
 
 # ==========================================
@@ -242,7 +317,7 @@ else:
 st.divider()
 
 st.caption(
-    "PROTAC Nexus • Early UI prototype. "
+    "PROTAC Nexus • Demo Environment. "
     "Computational hypotheses must remain distinct "
     "from published and validated experimental results."
 )
