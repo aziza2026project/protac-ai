@@ -69,6 +69,26 @@ PAGES = {
 
 
 # ==========================================
+# SERVICE PAGE MAPPING
+# ==========================================
+
+SERVICE_PAGE_MAP = {
+    "Natural Products Explorer": "Natural Products Explorer",
+    "PROTAC Explorer": "PROTAC Explorer",
+    "Molecular Docking": "Molecular Docking",
+    "3D Structure Visualization": "3D Structure Visualization",
+    "Experimental Data Explorer": "Experimental Data Explorer",
+    "Comparison & Ranking": "Comparison & Ranking",
+    "Ternary Complex Assessment": "Ternary Complex Assessment",
+    "Linker Optimization": "Linker Optimization",
+    "AI Prediction": "AI Prediction",
+    "Export & Reports": "Export & Reports",
+    "Research Consultation": "Research Consultation",
+    "Research Collaboration": "Research Collaboration",
+}
+
+
+# ==========================================
 # SESSION STATE
 # ==========================================
 
@@ -101,7 +121,9 @@ with st.sidebar:
         label_visibility="collapsed",
     )
 
-    st.session_state.current_page = selected_page
+    if selected_page != st.session_state.current_page:
+        st.session_state.current_page = selected_page
+        st.rerun()
 
     st.divider()
 
@@ -112,7 +134,7 @@ with st.sidebar:
 
 
 # ==========================================
-# MAIN CONTENT
+# HOME PAGE
 # ==========================================
 
 if st.session_state.current_page == "Home":
@@ -137,25 +159,10 @@ if st.session_state.current_page == "Home":
         "Select a service to access its dedicated research workspace."
     )
 
-    # Map service names to registered application pages
-    SERVICE_PAGE_MAP = {
-        "Natural Products Explorer": "Natural Products Explorer",
-        "PROTAC Explorer": "PROTAC Explorer",
-        "Molecular Docking": "Molecular Docking",
-        "3D Structure Visualization": "3D Structure Visualization",
-        "Experimental Data Explorer": "Experimental Data Explorer",
-        "Comparison & Ranking": "Comparison & Ranking",
-        "Ternary Complex Assessment": "Ternary Complex Assessment",
-        "Linker Optimization": "Linker Optimization",
-        "AI Prediction": "AI Prediction",
-        "Export & Reports": "Export & Reports",
-        "Research Consultation": "Research Consultation",
-        "Research Collaboration": "Research Collaboration",
-    }
-
     services_list = list(SERVICES.items())
 
-    # Display services in three columns
+    # Three-column service layout
+
     for start in range(0, len(services_list), 3):
 
         columns = st.columns(3)
@@ -180,14 +187,13 @@ if st.session_state.current_page == "Home":
                     if target_page:
 
                         if st.button(
-                            "Open Service →",
-                            key=f"service_button_{service_name}",
+                            "Explore Service →",
+                            key=f"service_{service_name}",
                             use_container_width=True,
                             type="primary",
                         ):
 
                             st.session_state.current_page = target_page
-
                             st.rerun()
 
                     else:
@@ -200,9 +206,33 @@ if st.session_state.current_page == "Home":
                         )
 
 
+# ==========================================
+# OTHER SERVICE PAGES
+# ==========================================
+
 else:
 
-    PAGES[st.session_state.current_page]()
+    current_page = st.session_state.current_page
+
+    # Small Home button
+
+    col_home, col_space = st.columns([1, 9])
+
+    with col_home:
+
+        if st.button(
+            "⌂ Home",
+            key="small_home_button",
+            help="Return to Home Page",
+            type="secondary",
+        ):
+
+            st.session_state.current_page = "Home"
+            st.rerun()
+
+    # Display selected page
+
+    PAGES[current_page]()
 
 
 # ==========================================
