@@ -35,13 +35,9 @@ Scientific tools and data providers should be integrated behind separate adapter
 Each major screen has its own file in `protac_nexus/pages/`, so changes stay local to that option. Shared service labels live in `protac_nexus/config/services.py`; shared styling lives in `protac_nexus/ui/styles.py`; external integrations live in `protac_nexus/integrations/`. See `docs/PROJECT_STRUCTURE.md`.
 
 
-## Public Demo User mode
+## Accounts and production readiness
 
-The Streamlit app currently starts in a public Demo User session. The banner and
-demo identity are for exploration only; they are **not authentication**. The
-Admin Portal is hidden and guarded, consultation/collaboration submissions are
-disabled, and payment actions are not implemented. Do not connect this public
-demo to production databases, private records, secrets, or payment credentials.
+The public Demo User identity and demo-mode restrictions have been removed. This does **not** add real sign-in: authentication, account storage, server-side roles, request persistence, notifications, and payment processing still need to be implemented before production use. The Admin Portal remains unavailable until secure administrator authentication is in place.
 
 For Streamlit Community Cloud, select **Python 3.11** in the app's deployment
 settings. The default `requirements.txt` intentionally excludes the native
