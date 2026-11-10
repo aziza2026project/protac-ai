@@ -21,8 +21,7 @@ jobs:
           import shutil
           from pathlib import Path
 
-          archive = Path("PROTAC_Nexus_Demo_Fixed.zip")
-
+          archive = Path("PROTAC_Nexus_No_Demo.zip")
           if not archive.exists():
               raise FileNotFoundError(
                   "PROTAC_Nexus_Demo_Fixed.zip not found"
