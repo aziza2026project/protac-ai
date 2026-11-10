@@ -1,0 +1,121 @@
+name: Restore PROTAC Nexus Structure
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore project folders
+        run: |
+          python - <<'PY'
+          import zipfile
+          import shutil
+          from pathlib import Path
+
+          archive = Path("PROTAC_Nexus_Demo_Fixed.zip")
+
+          if not archive.exists():
+              raise FileNotFoundError(
+                  "PROTAC_Nexus_Demo_Fixed.zip not found"
+              )
+
+          temp = Path("_restore_temp")
+          temp.mkdir(exist_ok=True)
+
+          with zipfile.ZipFile(archive) as z:
+              for item in z.infolist():
+                  name = item.filename.replace("\\", "/")
+                  parts = Path(name).parts
+
+                  if name.startswith("/") or ".." in parts:
+                      raise ValueError("Unsafe ZIP path")
+
+              z.extractall(temp)
+
+          source = temp / "protac-ai-main"
+
+          required = [
+              source / "app.py",
+              source / "protac_nexus" / "config" / "services.py",
+          ]
+
+          for file in required:
+              if not file.is_file():
+                  raise RuntimeError(
+                      f"Required file missing: {file}"
+                  )
+
+          # Identify flattened root files that belong
+          # to nested folders in the original archive.
+          nested_names = {
+              p.name
+              for p in source.rglob("*")
+              if p.is_file() and len(p.relative_to(source).parts) > 1
+          }
+
+          root_names = {
+              p.name for p in source.iterdir() if p.is_file()
+          }
+
+          backup = Path("_flattened_files_backup")
+          backup.mkdir(exist_ok=True)
+
+          for item in Path(".").iterdir():
+              if not item.is_file():
+                  continue
+
+              if item.name == archive.name:
+                  continue
+
+              if item.name in root_names:
+                  continue
+
+              if item.name in nested_names:
+                  shutil.move(str(item), str(backup / item.name))
+
+          # Restore the complete project structure.
+          for item in source.iterdir():
+              destination = Path(item.name)
+
+              if item.is_dir():
+                  shutil.copytree(
+                      item,
+                      destination,
+                      dirs_exist_ok=True
+                  )
+              else:
+                  shutil.copy2(item, destination)
+
+          shutil.rmtree(temp)
+          print("Project structure restored.")
+
+          PY
+
+      - name: Verify restored structure
+        run: |
+          test -f app.py
+          test -f protac_nexus/config/services.py
+          test -d protac_nexus/pages
+          test -d protac_nexus/integrations
+          test -d tests
+          echo "All required project paths exist."
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || (
+            git commit -m "Restore PROTAC Nexus folder structure"
+            git push
+          )
+          
